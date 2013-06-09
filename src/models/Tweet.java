@@ -1,11 +1,10 @@
 package models;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-
-import models.Post.SelectPost;
 
 import components.DatabaseAction;
 import components.DatabaseManager;
@@ -19,33 +18,35 @@ public class Tweet {
 	private Tweet origin;
 	private int responseID;
 	private Tweet response;
+	private Date date;
 	private boolean isNewPost;
 	
-	private Tweet(int tweetID, int userID, String tweet, int originID, int responseID) {
+	private Tweet(int tweetID, int userID, String tweet, int originID, int responseID, Date date) {
 		this.tweetID = tweetID;
 		this.userID = userID;
 		this.tweet = tweet;
 		this.originID = originID;
 		this.responseID = responseID;
+		this.date = date;
 		this.isNewPost = false;
 	}
 	
-	public Tweet(int userID,  String tweet, int originID, int responseID) {
-		super();
+	public Tweet(int userID,  String tweet, int originID, int responseID, Date date) {
 		this.tweetID = -1;
 		this.userID = userID;
 		this.tweet = tweet;
 		this.originID = originID;
 		this.responseID = responseID;
+		this.date = date;
 		this.isNewPost = true;
 	}
 
 	public void save() {
 		if(isNewPost){
-			String str = String.format("insert into  ttweet (userID, tweet, originID, responseID) VALUES (%d, '%s',%d,%d);", userID,tweet, originID,responseID);
+			String str = String.format("insert into  ttweet (userID, tweet, originID, responseID, date) VALUES (%d, '%s',%d,%d);", userID,tweet, originID,responseID,date);
 			DatabaseManager.execute(str);
 		}else{
-			String str = String.format("update ttweet set userID = %d, tweet = '%s', originID = %d, responseID = %d where tweetID = %d;", userID, tweet, originID , responseID, tweetID);
+			String str = String.format("update ttweet set userID = %d, tweet = '%s', originID = %d, date = %s, responseID = %d where tweetID = %d;", userID, tweet, originID , responseID, date.toString(), tweetID);
 			DatabaseManager.execute(str);			
 		}  
 	}
@@ -54,6 +55,7 @@ public class Tweet {
 		DatabaseManager.executeQuery(new SelectTweet(list), "select * from ttweet");
 		return list;
 	}
+	
 	private static Tweet findById(int tweetID) {
 		LinkedList<Tweet> list = new LinkedList<Tweet>();
 		DatabaseManager.executeQuery(new SelectTweet(list), String.format("select * from ttweet where tweetID = %d", tweetID));
@@ -61,6 +63,12 @@ public class Tweet {
 			return list.get(0);
 		else
 			return null;
+	}
+	
+	public static LinkedList<Tweet> findAllByUserId(int userID) {
+		LinkedList<Tweet> list = new LinkedList<Tweet>();
+		DatabaseManager.executeQuery(new SelectTweet(list), String.format("select * from ttweet where userID = %d", userID));
+		return list;
 	}
 	public static class SelectTweet implements DatabaseAction{
 		List<Tweet> list;
@@ -70,7 +78,7 @@ public class Tweet {
 		@Override
 		public void doAction(ResultSet rs) throws SQLException {
 			System.out.printf("%d %s %s \n", rs.getInt(1),rs.getString(2),rs.getString(3));
-			list.add(new Tweet(rs.getInt(1),rs.getInt(2),rs.getString(3),rs.getInt(4), rs.getInt(5)));
+			list.add(new Tweet(rs.getInt(1),rs.getInt(2),rs.getString(3),rs.getInt(4), rs.getInt(5), rs.getDate(6)));
 		}
 		
 	}
@@ -118,7 +126,7 @@ public class Tweet {
 	}
 	public Tweet getResponse() {
 		if(response == null)
-			this.response = Tweet.findById(responseID);;
+			this.response = Tweet.findById(responseID);
 		return response;
 	}
 	public void setResponse(Tweet response) {
@@ -126,6 +134,13 @@ public class Tweet {
 	}
 	public int getTweetID() {
 		return tweetID;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+	public Date getDate() {
+		return date;
 	}
 
 }

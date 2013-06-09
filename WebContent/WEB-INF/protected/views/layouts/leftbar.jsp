@@ -1,0 +1,8 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="ISO-8859-1"
+    import="lang.*,models.User;"%>
+    
+<%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
+<% User u = (User)request.getAttribute("user");%>
+<tags:profile user="<%=u%>" lang="<%=LangFactory.TURKISH%>" />
+<tags:footer lang="<%=LangFactory.TURKISH%>" />

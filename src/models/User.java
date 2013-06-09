@@ -1,11 +1,235 @@
 package models;
 
-public class User {
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
+import javax.swing.table.TableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import sun.misc.GC.LatencyRequest;
+import components.DatabaseAction;
+import components.DatabaseManager;
+
+public class User {
+	private int userID;
+	private String UserName;
+	public String UserAlias;
+	private String firstName;
+	private String lastName;
+	private String password;
+	private int sex;
+	private Date birth;
+	private String email;
+	private List<Tweet> tweets;
+	private boolean isNewPost;
+	
+	private User (int userID, String UserName, String UserAlias, String firstName,
+			String lastName, String password, int sex, Date birth, String email) {
+		
+		this.userID = userID;
+		this.UserName = UserName;
+		this.UserAlias = UserAlias;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.password = password;
+		this.sex = sex;
+		this.birth = birth;
+		this.email = email;
+		this.isNewPost = false;
+	}
+	
+	public User(String UserName, String UserAlias, String firstName, String lastName, 
+			String password, int sex, Date birth, String email) {
+		super();
+		this.userID = -1;
+		this.UserName = UserName;
+		this.UserAlias = UserAlias;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.password = password;
+		this.sex = sex;
+		this.birth = birth;
+		this.email = email;
+		this.isNewPost = true;
+	}
+	
+	public void save() {
+		if(isNewPost){
+			String str = String.format("insert into  tuser (UserName, UserAlias, firstName, lastName, password, sex, birth, email) " +
+					"VALUES ('%s', '%s', '%s', '%s', '%s', %d, '%s', '%s');", UserName, UserAlias, firstName, lastName, password, sex, birth.toString(), email);
+			DatabaseManager.execute(str);
+		}else{
+			String str = String.format("update tuser set UserName = '%s', UserAlias = '%s', firstName = '%s', " +
+					"lastName = '%s', sex = %d  where userID = %d;", UserName, UserAlias, firstName, lastName, sex, userID);
+			DatabaseManager.execute(str);			
+		}
+	}
+	public void followUserByID(int following_id){
+		String str = String.format("insert into  tfollow (userID, followerID) VALUES (%d, %d);", userID, following_id);
+		DatabaseManager.execute(str);
+	}
+	
+	public void unfollowUserByID(int following_id){
+		String str = String.format("delete from tfollow where followerID = %d",following_id);
+		DatabaseManager.execute(str);
+	}
+	
+	public static List<User> findAll() {
+		LinkedList<User> list = new LinkedList<User>();
+		DatabaseManager.executeQuery(new SelectUser(list), "select * from tuser");
+		return list;
+	}
+	
+	//User Delete  Ýþlemi //
+	public void deleteUser(){
+		String str = String.format("delete from tuser where userID = %d", userID);
+		DatabaseManager.execute(str);
+	}
+	
 
 	public static User findById(int userID) {
-		// TODO Auto-generated method stub
-		return null;
+		LinkedList<User> list = new LinkedList<User>();
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("select * from tuser where userId = %d", userID));
+		if(list.size() > 0)
+			return list.get(0);
+		else
+			return null;
 	}
+
+	public List<User> findFollowers() {
+		LinkedList<User> list = new LinkedList<User>();
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("Select * from tuser where userID in (select followerID from tfollow where userID = %d)",userID));
+		return list;
+		
+	}
+	
+	public List<User> findFollowings() {
+		LinkedList<User> list = new LinkedList<User>();
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("Select * from tuser where userID in (select userID from tfollow where followerID = %d)",userID));
+		return list;
+	}
+	
+	public List<Tweet> findTweets() {
+		return Tweet.findAllByUserId(userID);
+	}
+	
+	
+	public static class SelectUser implements DatabaseAction{
+		List<User> list;
+		public SelectUser(List<User> list){
+			this.list = list;
+		}
+		@Override
+		public void doAction(ResultSet rs) throws SQLException {
+			//System.out.printf("%d %s %s \n", rs.getInt(1),rs.getString(2),rs.getString(3));
+			
+			list.add(new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+					rs.getString(6), rs.getInt(7), rs.getDate(8), rs.getString(9)));
+		}
+	}
+	
+	//user
+	public String getUserName()
+	{
+		return this.UserName;
+	}
+	public void setUserName(String UserName)
+	{
+		this.UserName = UserName;
+	}
+	//useralias
+	public void setUserAlias(String UserAlias)
+	{
+		this.UserName = UserAlias;
+	}
+	public String getUserAlias()
+	{
+		return this.UserAlias;
+	}
+	//firstname
+	public String getfirstName()
+	{
+		return this.firstName;
+	}
+	public void setfirstName(String firstName)
+	{
+		this.firstName = firstName;
+	}
+	//lastname
+	public String getlastName(){
+		return this.lastName;
+	}
+	public void setlastName(String lastName)
+	{
+		this.lastName = lastName;
+	}
+	//pass
+	public String getpassword()
+	{
+		return this.password;
+	}
+	public void setpassword(String password)
+	{
+		this.password = password;
+	}
+	//sex
+	public int getsex()
+	{
+		return this.sex;
+	}
+	public void setsex(int sex)
+	{
+		this.sex = sex;
+	}
+	//email
+	public String getEmail()
+	{
+		System.out.println(email);
+		return this.email;
+	}
+	public void setemail(String email)
+	{
+		this.email = email;
+	}
+	//dogumtarihi
+	public Date getbirth()
+	{
+		return this.birth;
+	}
+	public void setbirth()
+	{
+		this.birth = birth;
+	}
+
+	public int getUserID()
+	{
+		return this.userID;
+	}
+	public List<Tweet> getTweets(){
+		if(tweets == null){
+			tweets = Tweet.findAllByUserId(userID);
+		}
+		return tweets;
+	}
+
+	public int getTweetConut(){
+		if(tweets == null){
+			tweets = Tweet.findAllByUserId(userID);
+		}
+		return tweets.size();
+	}
+	public int getFollowerConut(){
+		
+		return findFollowers().size();
+	}
+	public int getFollowingConut(){
+		
+		return findFollowings().size();
+	}
+	
+	
 
 }

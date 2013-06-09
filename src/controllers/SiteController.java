@@ -1,6 +1,7 @@
  package controllers;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,8 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import components.UserIdentity;
+import config.main;
 
-import models.Post;
+import models.User;
 import models.WebError;
 
 /**
@@ -23,7 +25,7 @@ public class SiteController extends Controller {
 		return "main.jsp";
 	}@Override
 	protected String getBase(){
-		return "site";
+		return "site"; 
 	}@Override
 	protected String getLayout(){
 		return "column2.jsp";
@@ -40,13 +42,11 @@ public class SiteController extends Controller {
 		actionMap.put("contact", new ActionContact());
 		actionMap.put("login", new ActionLogin());
 		actionMap.put("logout", new ActionLogout());
-		actionMap.put("create", new ActionCreate());
-		actionMap.put("post", new ActionPost());
 		return actionMap;
 	} 
 	@Override 
 	public void doError(HttpServletRequest request, HttpServletResponse response, WebError error) throws ServletException, IOException {
-		request.setAttribute("appname", "Jiisp");
+		request.setAttribute("appname", main.APPNAME);
 		request.setAttribute("title", "Hello app");
 		request.setAttribute("error", error);
 		renderPage(request, response, "error.jsp");
@@ -56,7 +56,7 @@ public class SiteController extends Controller {
 		@Override
 		public void doAction(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-			request.setAttribute("appname", "Jiisp");
+			request.setAttribute("appname", main.APPNAME);
 			request.setAttribute("title", "Hello app");
 			renderPage(request, response, "contact.jsp");
 		}
@@ -68,9 +68,11 @@ public class SiteController extends Controller {
 	class ActionIndex implements Action{
 		@Override
 		public void doAction(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-			request.setAttribute("postslist", Post.findAll());
-			request.setAttribute("appname", "Jiisp");
+			//User u = new User("talhaAkkas", "talha-akkas", "talha", "akkas","pass", 1, Date.valueOf("1991-3-30"), "talhakkas@gmail.com");
+			//u.save();
+			request.setAttribute("appname", main.APPNAME);
 			request.setAttribute("title", "Hello app");
+			request.setAttribute("user",  User.findAll().get(0));
 			renderPage(request, response, "index.jsp");
 		}
 
@@ -94,7 +96,7 @@ public class SiteController extends Controller {
 					return;
 				}
 			}
-			request.setAttribute("appname", "Jiisp");
+			request.setAttribute("appname", main.APPNAME);
 			request.setAttribute("title", "Hello app");
 			renderPage(request, response, "login.jsp");
 		}
@@ -138,80 +140,12 @@ public class SiteController extends Controller {
 				}
 				return;
 			}
-			request.setAttribute("appname", "Jiisp");
+			request.setAttribute("appname", main.APPNAME);
 			request.setAttribute("title", "Hello app");
 			renderPage(request, response, "logout.jsp");
 		}
 		  
 	}
-	class ActionCreate implements Action{
-		@Override
-		public boolean beforeAction(HttpServletRequest request, HttpServletResponse response) {
-			return new UserIdentity().isAuthenticate(request);
-		}
 
-		@Override
-		public void doAction(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException {
-			if(request.getParameter("create") != null){
 
-				System.out.println(request.getParameter("header"));
-				System.out.println(request.getParameter("text"));
-				Post p = new Post(request.getParameter("header"), request.getParameter("text"));
-
-				p.savePost();
-				try {
-					response.sendRedirect(response.encodeRedirectURL(getBaseurl()));
-					return;
-				} catch (Exception e){
-					e.printStackTrace();
-				}
-			}
-			request.setAttribute("appname", "Jiisp");
-			request.setAttribute("title", "Hello app");
-			renderPage(request, response, "create.jsp");
-		}
-		
-	}
-	class ActionPost implements Action{
-
-		@Override
-		public boolean beforeAction(HttpServletRequest request,HttpServletResponse response) {
-			if(! new UserIdentity().isAuthenticate(request)){
-				try {
-					response.sendRedirect(response.encodeRedirectURL(getBaseurl()));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				return false;
-				}
-			return true;
-		}
-
-		@Override
-		public void doAction(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
-
-			if(request.getParameter("id") != null){
-				Post post = Post.findById(Integer.parseInt(request.getParameter("id")));
-				if(request.getParameter("delete") != null){
-					post.delete();
-					
-				}else{
-					request.setAttribute("appname", "Jiisp");
-					request.setAttribute("title", "Hello app");
-					request.setAttribute("post", post);
-					renderPage(request, response, "post.jsp");
-					return;
-				}
-				
-			}
-			try {
-				response.sendRedirect(response.encodeRedirectURL(getBaseurl()));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			
-		}
-		
-	}
 }
