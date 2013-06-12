@@ -18,7 +18,7 @@
     	<% for(int i = 0; i < list.size() && i < 5; i++){ %>
 			<li class="trend-item js-trend-item  " data-trend-name="<%= list.get(i)%>">
 		
-      			<a class="js-nav" href="/search?q=<%= URIUtil.encodeQuery((String)list.get(i)) %>;src=tren" data-query-source="trend_click"><%= list.get(i)%></a>
+      			<a class="js-nav" href="#" data-query-source="trend_click"><%= list.get(i)%></a>
 			
 			</li>
 		<%} %>

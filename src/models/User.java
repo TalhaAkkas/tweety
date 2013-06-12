@@ -2,12 +2,17 @@ package models;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import org.apache.commons.httpclient.util.DateParseException;
+import org.apache.commons.httpclient.util.DateParser;
 
 import sun.misc.GC.LatencyRequest;
 import components.DatabaseAction;
@@ -56,15 +61,17 @@ public class User {
 		this.isNewPost = true;
 	}
 	
-	public void save() {
+	public boolean save() {
+		DateFormat df = new SimpleDateFormat("yyyy-mm-dd");
+		System.out.println(df.format(birth));
 		if(isNewPost){
 			String str = String.format("insert into  tuser (UserName, UserAlias, firstName, lastName, password, sex, birth, email) " +
-					"VALUES ('%s', '%s', '%s', '%s', '%s', %d, '%s', '%s');", UserName, UserAlias, firstName, lastName, password, sex, birth.toString(), email);
-			DatabaseManager.execute(str);
+					"VALUES ('%s', '%s', '%s', '%s', '%s', %d, '%s', '%s');", UserName, UserAlias, firstName, lastName, password, sex, df.format(birth), email);
+			return DatabaseManager.execute(str);
 		}else{
 			String str = String.format("update tuser set UserName = '%s', UserAlias = '%s', firstName = '%s', " +
 					"lastName = '%s', sex = %d  where userID = %d;", UserName, UserAlias, firstName, lastName, sex, userID);
-			DatabaseManager.execute(str);			
+			return DatabaseManager.execute(str);			
 		}
 	}
 	public void followUserByID(int following_id){
@@ -73,7 +80,7 @@ public class User {
 	}
 	
 	public void unfollowUserByID(int following_id){
-		String str = String.format("delete from tfollow where followerID = %d",following_id);
+		String str = String.format("delete from tfollow where followerID = %d and userID = %d",following_id,userID);
 		DatabaseManager.execute(str);
 	}
 	
@@ -82,6 +89,31 @@ public class User {
 		DatabaseManager.executeQuery(new SelectUser(list), "select * from tuser");
 		return list;
 	}
+	public static List<User> findRecommends() {
+		List<User> list = findAll();
+		int a = (int) Math.floor(Math.random()*(list.size()-5) + 5 );
+		return list.subList(a-5, a);
+	}
+	
+	public static User findByUserName(String username){
+		LinkedList<User> list = new LinkedList<User>();
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("select * from tuser where UserName = '%s'", username));
+		if(list.size() > 0)
+			return list.get(0);
+		else
+			return null;
+	}
+	public LinkedList<User> findFollower(){
+		LinkedList<User> list = new LinkedList<User>();
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("select * from tuser where userID in (select userID from tfollow where followerID = %d)", userID));
+		return list;
+	}
+	public LinkedList<User> findFollows(){
+		LinkedList<User> list = new LinkedList<User>();
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("select * from tuser where userID in (select followerID from tfollow where userID  = %d)", userID));
+		return list;
+	}
+	
 	
 	//User Delete  Ýþlemi //
 	public void deleteUser(){
@@ -92,7 +124,7 @@ public class User {
 
 	public static User findById(int userID) {
 		LinkedList<User> list = new LinkedList<User>();
-		DatabaseManager.executeQuery(new SelectUser(list), String.format("select * from tuser where userId = %d", userID));
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("select * from tuser where userID = %d", userID));
 		if(list.size() > 0)
 			return list.get(0);
 		else
@@ -101,15 +133,19 @@ public class User {
 
 	public List<User> findFollowers() {
 		LinkedList<User> list = new LinkedList<User>();
-		DatabaseManager.executeQuery(new SelectUser(list), String.format("Select * from tuser where userID in (select followerID from tfollow where userID = %d)",userID));
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("Select * from tuser where userID in (select userID from tfollow where  followerID = %d)",userID));
 		return list;
 		
 	}
 	
 	public List<User> findFollowings() {
 		LinkedList<User> list = new LinkedList<User>();
-		DatabaseManager.executeQuery(new SelectUser(list), String.format("Select * from tuser where userID in (select userID from tfollow where followerID = %d)",userID));
+		DatabaseManager.executeQuery(new SelectUser(list), String.format("Select * from tuser where userID in (select followerID from tfollow where userID = %d)",userID));
 		return list;
+	}
+	
+	public String fullName(){
+		return getfirstName() + " " +  getlastName(); 
 	}
 	
 	public List<Tweet> findTweets() {
@@ -124,10 +160,10 @@ public class User {
 		}
 		@Override
 		public void doAction(ResultSet rs) throws SQLException {
-			//System.out.printf("%d %s %s \n", rs.getInt(1),rs.getString(2),rs.getString(3));
-			
+			//System.out.printf("%d %s %s %s %s\n", rs.getInt(1),rs.getString(2),rs.getString(3),java.sql.Date.valueOf(rs.getString(8)), rs.getString(9));
 			list.add(new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
-					rs.getString(6), rs.getInt(7), rs.getDate(8), rs.getString(9)));
+				rs.getString(6), rs.getInt(7), java.sql.Date.valueOf(rs.getString(8)), rs.getString(9)));
+			
 		}
 	}
 	
@@ -167,11 +203,11 @@ public class User {
 		this.lastName = lastName;
 	}
 	//pass
-	public String getpassword()
+	public String getPassword()
 	{
 		return this.password;
 	}
-	public void setpassword(String password)
+	public void setPassword(String password)
 	{
 		this.password = password;
 	}

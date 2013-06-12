@@ -3,6 +3,9 @@ package models;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,13 +44,14 @@ public class Tweet {
 		this.isNewPost = true;
 	}
 
-	public void save() {
+	public boolean save() {
 		if(isNewPost){
-			String str = String.format("insert into  ttweet (userID, tweet, originID, responseID, date) VALUES (%d, '%s',%d,%d);", userID,tweet, originID,responseID,date);
-			DatabaseManager.execute(str);
+
+			String str = String.format("insert into  ttweet (userID, tweet, originID, responseID) VALUES (%d, '%s',%d,%d)", userID,tweet, originID, responseID);
+			return DatabaseManager.execute(str);
 		}else{
 			String str = String.format("update ttweet set userID = %d, tweet = '%s', originID = %d, date = %s, responseID = %d where tweetID = %d;", userID, tweet, originID , responseID, date.toString(), tweetID);
-			DatabaseManager.execute(str);			
+			return DatabaseManager.execute(str);			
 		}  
 	}
 	public static List<Tweet> findAll() {
@@ -55,7 +59,24 @@ public class Tweet {
 		DatabaseManager.executeQuery(new SelectTweet(list), "select * from ttweet");
 		return list;
 	}
-	
+
+	public static List<Tweet> findAllByUserID(int userId){
+		LinkedList<Tweet> list = new LinkedList<Tweet>();
+		DatabaseManager.executeQuery(new SelectTweet(list), String.format("SELECT * FROM `ttweet` WHERE userID = %d",userId));
+		sortTweetList(list);
+		return list;
+		
+	}
+	public static List<Tweet> findAllByWallID(int userId){
+		LinkedList<Tweet> list = new LinkedList<Tweet>();
+		DatabaseManager.executeQuery(new SelectTweet(list), String.format("SELECT * FROM `ttweet` WHERE userID in (select followerID from tfollow where userID =%d)",userId));
+		System.out.println(list.size());
+		list.addAll(findAllByUserID(userId));
+		sortTweetList(list);
+		return list;
+		
+	}
+
 	private static Tweet findById(int tweetID) {
 		LinkedList<Tweet> list = new LinkedList<Tweet>();
 		DatabaseManager.executeQuery(new SelectTweet(list), String.format("select * from ttweet where tweetID = %d", tweetID));
@@ -78,7 +99,7 @@ public class Tweet {
 		@Override
 		public void doAction(ResultSet rs) throws SQLException {
 			System.out.printf("%d %s %s \n", rs.getInt(1),rs.getString(2),rs.getString(3));
-			list.add(new Tweet(rs.getInt(1),rs.getInt(2),rs.getString(3),rs.getInt(4), rs.getInt(5), rs.getDate(6)));
+			list.add(new Tweet(rs.getInt(1),rs.getInt(6),rs.getString(2),rs.getInt(3), rs.getInt(4), rs.getDate(5)));
 		}
 		
 	}
@@ -141,6 +162,19 @@ public class Tweet {
 	}
 	public Date getDate() {
 		return date;
+	}
+	public static void sortTweetList(List<Tweet> list){
+		for(int i=0; i < list.size(); i++){
+			for(int j=i; j < list.size(); j++){
+				if(list.get(i).getTweetID() < list.get(j).getTweetID()){
+					Tweet temp = list.get(i);
+					list.set(i, list.get(j));
+					list.set(j, temp);
+					
+				}
+			}
+			
+		}		
 	}
 
 }

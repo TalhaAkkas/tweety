@@ -1,26 +1,33 @@
-<%@ tag description="Simple menu" %>
 <%@ tag import="org.apache.commons.httpclient.util.URIUtil" %>
 <%@ tag import="models.Tweet" %>
 <%@ tag import="lang.*" %>
+<%@ tag import="components.UrlComposer" %>
 <%@ attribute name="lang" required="true" rtexprvalue="true" type="java.lang.String" %>
 <%@ attribute name="tweet" required="true" rtexprvalue="true" type="models.Tweet" %>
 <% LangPack l = LangFactory.getLangPack(lang); %>
 
 
 <% String ownerName = tweet.getUser().getUserName();%>
+<% String ownerID = String.valueOf(tweet.getUser().getUserID());%>
 <% String tweetId = String.valueOf(tweet.getTweetID()); %>
 <% String userImage = ""; %>
 <% String ownerNick = tweet.getUser().getUserAlias();  %>
 <% String tweetText = tweet.getTweet(); %>
 <% String tweetType = ""; %>
 <% String tweetDate = tweet.getDate().toString(); %>
-<% String tweetStamp = String.copyValueOf(tweet.getDate().getTime()); %>
+<% String tweetStamp = String.valueOf(tweet.getDate().getTime()); %>
 <% String tweetDateText = tweet.getDate().toString(); %>
 <% String open = l.getOpen(); %>
-<% String close =  l.getClose(); %>
-<% String response =  l.getResponse(); %>
-<% String retweet =  l.getRetweet(); %>
-
+<% String close = l.getClose(); %>
+<% String respns = l.getResponse(); %>
+<% String hadretweet =l.getHadretweet();%>
+<% String delete = l.getDelete(); %>
+<% String addFavourite = l.getAddFavourite(); %>
+<% String addedFavourite = l.getAddedFavourite(); %>
+<% String takeBackretweet = l.getTakeBackretweet(); %>
+<% String takeBackFavourite = l.getTakeBackFavourite(); %>
+<% String retweet =  l.getRetweet();%>
+<% String adretweett = " "; // TODO%>
 
 <!-- ownerName : 36-->
 <!-- tweetId -->
@@ -70,14 +77,14 @@
     <i class="dogear"></i>
     <div class="content">
       <div class="stream-item-header">
-			<a class="account-group js-account-group js-action-profile js-user-profile-link js-nav" href="/<%=ownerNick%>" data-user-id="<%=ownerID%>">
-				<img class="avatar js-action-profile-avatar" src="<%= userimage %>" alt="<%=ownerName%>">
+			<a class="account-group js-account-group js-action-profile js-user-profile-link js-nav" href="<%=UrlComposer.getSimpleUrl("Site", "user", new String[][]{new String[]{"username", tweet.getUser().getUserName()}}) %>" data-user-id="<%=ownerID%>">
+				<img class="avatar js-action-profile-avatar" src="<%= userImage %>" alt="<%=ownerName%>">
 				<strong class="fullname js-action-profile-name show-popup-with-id"><%=ownerName%></strong>
-				<span>‏</span><span class="username js-action-profile-name"><s>@</s><b><%=ownerNick%></b></span>
+				<span class="username js-action-profile-name">@<b><%=ownerNick%></b></span>
 				<span class="icon sm-lock"><span class="visuallyhidden"><%=tweetType%></span></span>
 			</a>
         <small class="time">
-    <a href="/<%=ownerNick%>/status/<%=tweetId%>" class="tweet-timestamp js-permalink js-nav" title="<%=tweetDate%>"><span class="_timestamp js-short-timestamp js-relative-timestamp" data-time="<%=tweetStamp%>" data-long-form="true"><%=tweetDateText%></span></a>
+    <a href="#" class="tweet-timestamp js-permalink js-nav" title="<%=tweetDate%>"><span class="_timestamp js-short-timestamp js-relative-timestamp" data-time="<%=tweetStamp%>" data-long-form="true"><%=tweetDateText%></span></a>
 </small>
       </div>
       <p class="js-tweet-text"><%=tweetText%></p>
@@ -92,7 +99,7 @@
 
 
           
-          <a class="details with-icn js-details" href="/<%=ownerNick%>/status/<%=tweetId%>">
+          <a class="details with-icn js-details" href="#">
             <span class="details-icon js-icon-container">
               
             </span>
@@ -114,35 +121,35 @@
 
 <ul class="tweet-actions js-actions">
   <li class="action-reply-container">
-    <a role="button" class="with-icn js-action-reply" data-modal="tweet-reply" href="#">
+    <a class="with-icn js-action-reply" data-modal="tweet-reply" href="#">
       <span class="icon sm-reply"></span>
-      <b><%=response%></b>
+      <b><%=respns%></b>
     </a>
   </li>
   <li class="action-rt-container js-toggle-state js-toggle-rt">
-    <a role="button" class="with-icn retweet cannot-retweet" data-modal="tweet-retweet" href="#">
+    <a class="with-icn retweet cannot-retweet" data-modal="tweet-retweet" href="#">
       <span class="icon sm-rt"></span>
-      <b> <%=retweett %> </b>
+      <b> <%= retweet%> </b>
     </a>
-    <a role="button" class="with-icn undo-retweet" data-modal="tweet-retweet" href="#" title="<%=takeBackretweet%>">
+    <a class="with-icn undo-retweet" data-modal="tweet-retweet" href="#" title="<%=takeBackretweet%>">
       <span class="icon sm-rt"></span>
-      <b><%=hadretweett%></b>
+      <b><%=adretweett%></b>
     </a>
   </li>
   <li class="action-del-container">
-    <a role="button" class="with-icn js-action-del" href="#">
+    <a class="with-icn js-action-del" href="#">
       <span class="icon sm-trash"></span>
       <b><%=delete%> </b>
     </a>
   </li>
   <li class="action-fav-container js-toggle-state js-toggle-fav">
-      <a role="button" class="with-icn favorite" href="#">
+      <a class="with-icn favorite" href="#">
         <span class="icon sm-fav"></span>
         <b><%=addFavourite%></b>
       </a>
-      <a role="button" class="with-icn unfavorite" href="#" title="<%=takeBackFavourite%>">
+      <a class="with-icn unfavorite" href="#" title="<%=takeBackFavourite%>">
         <span class="icon sm-fav"></span>
-        <b><%addedFavourite%></b>
+        <b><%=addedFavourite %></b>
       </a>
   </li>
 

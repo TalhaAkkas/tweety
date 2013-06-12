@@ -23,19 +23,19 @@
     <div class="flex-module-inner js-items-container">
       <ul class="clearfix">
         <li class="copyright"><%=l.getAbout()%></li>
-        <li><a href="/about"><%=l.getCopyright() %></a></li>
-        <li><a href="//support.twitter.com"><%=l.getHelping()%></a></li>
-        <li><a href="/tos"><%=l.getConditions()%></a></li>
-        <li><a href="/privacy"><%=l.getPrivacy()%></a></li>
-        <li><a href="http://blog.twitter.com"><%=l.getBlog()%></a></li>
-        <li><a href="http://status.twitter.com"><%=l.getState()%></a></li>
-        <li><a href="/download"><%=l.getApplications()%></a></li>
-        <li><a href="/about/resources"><%=l.getSources()%></a></li>
-        <li><a href="/jobs"><%=l.getCareer()%></a></li>
-        <li><a href="https://business.twitter.com/start-advertising"><%=l.getAdvertisers()%></a></li>
-        <li><a href="https://business.twitter.com"><%=l.getBusinesses()%></a></li>
-        <li><a href="//media.twitter.com"><%=l.getMedia()%></a></li>
-        <li><a href="//dev.twitter.com"><%=l.getDevelopers()%></a></li>
+        <li><a href="#"><%=l.getCopyright() %></a></li>
+        <li><a href="#"><%=l.getHelping()%></a></li>
+        <li><a href="#"><%=l.getConditions()%></a></li>
+        <li><a href="#"><%=l.getPrivacy()%></a></li>
+        <li><a href="#"><%=l.getBlog()%></a></li>
+        <li><a href="#"><%=l.getState()%></a></li>
+        <li><a href="#"><%=l.getApplications()%></a></li>
+        <li><a href="#"><%=l.getSources()%></a></li>
+        <li><a href="#"><%=l.getCareer()%></a></li>
+        <li><a href="#"><%=l.getAdvertisers()%></a></li>
+        <li><a href="#"><%=l.getBusinesses()%></a></li>
+        <li><a href="#"><%=l.getMedia()%></a></li>
+        <li><a href="#"><%=l.getDevelopers()%></a></li>
       </ul>
     </div>
   </div>

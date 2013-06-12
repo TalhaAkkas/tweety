@@ -21,7 +21,7 @@ public class DatabaseManager {
 		}
         return DriverManager.getConnection(String.format("%s/%s", main.DBURL,main.DBNAME), main.DBUSERNAME, main.DBPASSWORD);
 	}
-	public static void execute(String query) {
+	public static boolean execute(String query) {
 		try {
 			Connection connection = getConnection();
 			Statement statement = connection.createStatement(); 
@@ -29,10 +29,12 @@ public class DatabaseManager {
 			
 			statement.close();
 			connection.close();
+			return true;
 		} catch (SQLException e) {
 			System.out.println(query);
 			System.out.println(e.getSQLState());
 			e.printStackTrace();
+			return false;
 		}
 		
 	}
